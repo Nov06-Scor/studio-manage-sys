@@ -14,7 +14,7 @@ router.post('/config', (req, res) => {
     const { url, key } = req.body;
     supabaseService.setConfig({ url, key });
     res.json({ success: true, message: 'Supabase配置已更新' });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ success: false, message: '配置更新失败' });
   }
 });
@@ -23,19 +23,17 @@ router.post('/test', async (req, res) => {
   try {
     const result = await supabaseService.testConnection();
     if (result.success) {
-      res.json({ success: true, message: 'Supabase连接测试成功' });
+      res.json({
+        success: true,
+        message: result.info || 'Supabase连接测试成功',
+      });
     } else {
-      res.json({ success: false, message: 'Supabase连接测试失败', error: result.error });
+      res.json({
+        success: false,
+        message: 'Supabase连接测试失败',
+        error: result.error,
+      });
     }
-  } catch (error: any) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-router.post('/initialize', async (req, res) => {
-  try {
-    await supabaseService.initializeTables();
-    res.json({ success: true, message: 'Supabase表初始化完成' });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -43,7 +41,7 @@ router.post('/initialize', async (req, res) => {
 
 router.post('/sync/all', async (req, res) => {
   try {
-    await supabaseService.syncAllData(
+    const result = await supabaseService.syncAllData(
       mockUsers,
       mockOrders,
       mockPlayers,
@@ -52,9 +50,13 @@ router.post('/sync/all', async (req, res) => {
       mockPayments
     );
     res.json({
-      success: true,
-      message: '所有数据已同步到Supabase',
+      success: result.success,
+      message: result.success
+        ? `成功同步 ${result.count} 条数据`
+        : `同步完成，成功 ${result.count} 条，失败 ${result.errors.length} 条`,
       data: {
+        count: result.count,
+        errors: result.errors,
         users: mockUsers.length,
         orders: mockOrders.length,
         players: mockPlayers.length,
@@ -70,10 +72,18 @@ router.post('/sync/all', async (req, res) => {
 
 router.post('/sync/users', async (req, res) => {
   try {
+    let count = 0;
+    const errors: string[] = [];
     for (const user of mockUsers) {
-      await supabaseService.saveUser(user);
+      const r = await supabaseService.saveUser(user);
+      if (r.success) count++;
+      else if (r.error) errors.push(`${user.username}: ${r.error}`);
     }
-    res.json({ success: true, message: `已同步 ${mockUsers.length} 个用户` });
+    res.json({
+      success: errors.length === 0,
+      message: `已同步 ${count} 个用户`,
+      data: { count, errors },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -81,10 +91,18 @@ router.post('/sync/users', async (req, res) => {
 
 router.post('/sync/orders', async (req, res) => {
   try {
+    let count = 0;
+    const errors: string[] = [];
     for (const order of mockOrders) {
-      await supabaseService.saveOrder(order);
+      const r = await supabaseService.saveOrder(order);
+      if (r.success) count++;
+      else if (r.error) errors.push(`${order.orderNo}: ${r.error}`);
     }
-    res.json({ success: true, message: `已同步 ${mockOrders.length} 个订单` });
+    res.json({
+      success: errors.length === 0,
+      message: `已同步 ${count} 个订单`,
+      data: { count, errors },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -92,10 +110,18 @@ router.post('/sync/orders', async (req, res) => {
 
 router.post('/sync/players', async (req, res) => {
   try {
+    let count = 0;
+    const errors: string[] = [];
     for (const player of mockPlayers) {
-      await supabaseService.savePlayer(player);
+      const r = await supabaseService.savePlayer(player);
+      if (r.success) count++;
+      else if (r.error) errors.push(`${player.playerName}: ${r.error}`);
     }
-    res.json({ success: true, message: `已同步 ${mockPlayers.length} 个打手` });
+    res.json({
+      success: errors.length === 0,
+      message: `已同步 ${count} 个打手`,
+      data: { count, errors },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -103,10 +129,18 @@ router.post('/sync/players', async (req, res) => {
 
 router.post('/sync/customers', async (req, res) => {
   try {
+    let count = 0;
+    const errors: string[] = [];
     for (const customer of mockCustomers) {
-      await supabaseService.saveCustomer(customer);
+      const r = await supabaseService.saveCustomer(customer);
+      if (r.success) count++;
+      else if (r.error) errors.push(`${customer.customerName}: ${r.error}`);
     }
-    res.json({ success: true, message: `已同步 ${mockCustomers.length} 个客户` });
+    res.json({
+      success: errors.length === 0,
+      message: `已同步 ${count} 个客户`,
+      data: { count, errors },
+    });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

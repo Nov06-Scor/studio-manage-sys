@@ -40,3 +40,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Agent Skills
+.agents/
+.trae/
+skills-lock.json

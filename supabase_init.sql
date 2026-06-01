@@ -1,5 +1,6 @@
 -- 初始化 Supabase 数据库表
 -- 在 Supabase Dashboard 的 SQL Editor 中运行此脚本
+-- 链接: https://supabase.com/dashboard/project/zuidiahuriqdqtwvfo/sql/new
 
 -- 用户表
 CREATE TABLE IF NOT EXISTS users (
@@ -87,11 +88,16 @@ CREATE TABLE IF NOT EXISTS payments (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- 为常用字段创建索引
+-- 索引
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
 CREATE INDEX IF NOT EXISTS idx_players_status ON players(status);
 CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
+
+-- 授权 anon 角色访问表（重要！）
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
 -- 完成！
 SELECT '数据库表初始化成功！' AS message;
