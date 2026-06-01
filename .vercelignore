@@ -1,0 +1,8 @@
+# Ignore backend API files to avoid Serverless Functions limit
+api/
+node_modules/
+dist/
+.env
+.env.local
+.vercel
+.git
