@@ -45,3 +45,6 @@ Thumbs.db
 .agents/
 .trae/
 skills-lock.json
+
+# Backend API (not needed for Vercel deployment)
+api/
