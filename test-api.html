@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API连接测试</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1f2937;
+      margin-bottom: 24px;
+    }
+    .test-item {
+      margin-bottom: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .test-item h3 {
+      margin: 0 0 12px 0;
+      color: #374151;
+    }
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .status.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .result {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 200px;
+      overflow-y: auto;
+      word-break: break-all;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .info {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔌 API连接测试</h1>
+    
+    <div class="info">
+      <strong>说明：</strong>此页面用于测试前后端服务连接是否正常。点击下方按钮开始测试。
+    </div>
+
+    <button onclick="runAllTests()">开始测试</button>
+
+    <div class="test-item">
+      <h3>1. 后端服务健康检查</h3>
+      <div id="health-status" class="status pending">测试中...</div>
+      <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-item">
+      <h3>2. 登录接口测试</h3>
+      <div id="login-status" class="status pending">测试中...</div>
+      <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="test-item">
+      <h3>3. 获取部门列表</h3>
+      <div id="departments-status" class="status pending">测试中...</div>
+      <div id="departments-result" class="result"></div>
+    </div>
+
+    <div class="test-item">
+      <h3>4. 获取岗位列表</h3>
+      <div id="positions-status" class="status pending">测试中...</div>
+      <div id="positions-result" class="result"></div>
+    </div>
+
+    <div class="test-item">
+      <h3>5. 获取员工列表</h3>
+      <div id="employees-status" class="status pending">测试中...</div>
+      <div id="employees-result" class="result"></div>
+    </div>
+
+    <div class="test-item">
+      <h3>6. 获取服务内容列表</h3>
+      <div id="services-status" class="status pending">测试中...</div>
+      <div id="services-result" class="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3001/api';
+
+    async function testHealth() {
+      const statusEl = document.getElementById('health-status');
+      const resultEl = document.getElementById('health-result');
+      try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        if (data.success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = '✅ 服务正常';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return true;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 服务异常';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testLogin() {
+      const statusEl = document.getElementById('login-status');
+      const resultEl = document.getElementById('login-result');
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'admin', password: 'admin123' })
+        });
+        const data = await response.json();
+        if (data.success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = '✅ 登录成功';
+          resultEl.textContent = `用户ID: ${data.data.user.id}\n用户名: ${data.data.user.username}\n角色: ${data.data.user.role}`;
+          return data.data.token;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 登录失败';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return null;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return null;
+      }
+    }
+
+    async function testDepartments(token) {
+      const statusEl = document.getElementById('departments-status');
+      const resultEl = document.getElementById('departments-result');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${API_BASE}/employees/departments`, { headers });
+        const data = await response.json();
+        if (data.success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = `✅ 成功 (${data.data.length}个部门)`;
+          resultEl.textContent = JSON.stringify(data.data.map(d => d.name), null, 2);
+          return true;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 获取失败';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testPositions(token) {
+      const statusEl = document.getElementById('positions-status');
+      const resultEl = document.getElementById('positions-result');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${API_BASE}/employees/positions`, { headers });
+        const data = await response.json();
+        if (data.success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = `✅ 成功 (${data.data.length}个岗位)`;
+          resultEl.textContent = JSON.stringify(data.data.map(p => p.name), null, 2);
+          return true;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 获取失败';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testEmployees(token) {
+      const statusEl = document.getElementById('employees-status');
+      const resultEl = document.getElementById('employees-result');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${API_BASE}/employees`, { headers });
+        const data = await response.json();
+        if (data.success) {
+          statusEl.className = 'status success';
+          statusEl.textContent = `✅ 成功 (${data.data.total}名员工)`;
+          resultEl.textContent = JSON.stringify(data.data.items.map(e => e.name), null, 2);
+          return true;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 获取失败';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return false;
+      }
+    }
+
+    async function testServices(token) {
+      const statusEl = document.getElementById('services-status');
+      const resultEl = document.getElementById('services-result');
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const response = await fetch(`${API_BASE}/services`, { headers });
+        const data = await response.json();
+        if (data.success) {
+          // 服务内容API返回的是分页结构
+          const services = data.data.items || data.data;
+          const total = data.data.total || services.length;
+          statusEl.className = 'status success';
+          statusEl.textContent = `✅ 成功 (${total}个服务)`;
+          resultEl.textContent = JSON.stringify(services.map(s => s.name), null, 2);
+          return true;
+        } else {
+          statusEl.className = 'status error';
+          statusEl.textContent = '❌ 获取失败';
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        statusEl.className = 'status error';
+        statusEl.textContent = '❌ 连接失败';
+        resultEl.textContent = '错误信息: ' + error.message;
+        return false;
+      }
+    }
+
+    async function runAllTests() {
+      await testHealth();
+      const token = await testLogin();
+      await testDepartments(token);
+      await testPositions(token);
+      await testEmployees(token);
+      await testServices(token);
+    }
+  </script>
+</body>
+</html>
