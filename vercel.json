@@ -1,4 +1,12 @@
 {
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "outputDirectory": "dist",
+  "public": true,
+  "trailingSlash": false,
+  "framework": "vite",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -8,5 +16,15 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "api/index.ts": {
+      "runtime": "@vercel/node@3",
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }

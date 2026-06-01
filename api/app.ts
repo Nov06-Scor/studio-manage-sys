@@ -22,8 +22,11 @@ import memberRoutes from './routes/members.js'
 import employeeRoutes from './routes/employees.js'
 import handoffRoutes from './routes/handoffs.js'
 import serviceRoutes from './routes/services.js'
+import feishuRoutes from './routes/feishu.js'
+import supabaseRoutes from './routes/supabase.js'
 import { mockEmployees, mockPositions, mockPermissions } from './data/advancedMockData.js'
 import { mockUsers, PERMISSION_CODES } from './data/mockData.js'
+import supabaseService from './services/supabase.js'
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url)
@@ -33,6 +36,15 @@ const __dirname = path.dirname(__filename)
 dotenv.config()
 
 const app: express.Application = express()
+
+// 从环境变量初始化 Supabase 配置
+if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
+  supabaseService.setConfig({
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+  });
+  console.log('✅ Supabase 已从环境变量加载配置');
+}
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
@@ -52,6 +64,8 @@ app.use('/api/members', memberRoutes)
 app.use('/api/employees', employeeRoutes)
 app.use('/api/handoffs', handoffRoutes)
 app.use('/api/services', serviceRoutes)
+app.use('/api/feishu', feishuRoutes)
+app.use('/api/supabase', supabaseRoutes)
 
 // 系统初始化API
 app.post('/api/system/initialize', (req: Request, res: Response) => {
