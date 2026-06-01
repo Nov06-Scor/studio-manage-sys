@@ -21,6 +21,8 @@ export interface User {
   phone?: string;
   status: 'active' | 'inactive' | 'banned';
   lastLogin?: string;
+  positionId?: string;
+  positionName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +70,7 @@ export interface Order {
   game: string;
   content: string;
   requirements?: string;
+  notes?: string;
   price: number;
   actualPrice?: number;
   status: OrderStatus;
@@ -80,6 +83,7 @@ export interface Order {
   progress: number;
   requiredPlayersCount?: 1 | 2;
   assignedBy?: string;
+  createdBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -99,12 +103,14 @@ export interface Payment {
   orderId: string;
   customerId: string;
   type: 'income' | 'payout';
+  method?: string;
   amount: number;
   status: PaymentStatus;
   paymentMethod?: string;
   transactionId?: string;
   paidAt?: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Withdrawal {
